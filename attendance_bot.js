@@ -1,14 +1,16 @@
 const credentials = require("./credentials.js");
 const puppeteer = require('puppeteer');
-const progressTrackerAttendanceUrl = credentials.url;
+const progressTrackerAttendanceUrl = credentials.aAurl;
 
 async function initBrowser() {
-    const browser = await puppeteer.launch({headless: false});
+    const browser = await puppeteer.launch({headless: true});
+    console.log('Visiting Progress Tracker...');
     const page = await browser.newPage();
-    // await page.authenticate({username: credentials.email, password: credentials.password});
+    // await page.authenticate({username: credentials.aAemail, password: credentials.aApassword});
     await page.goto(progressTrackerAttendanceUrl);
-    await page.type('[id=instructor_email]', credentials.email);
-    await page.type('[id=instructor_password]', credentials.password);
+    console.log('Logging into Progress Tracker...');
+    await page.type('[id=instructor_email]', credentials.aAemail);
+    await page.type('[id=instructor_password]', credentials.aApassword);
     await page.keyboard.press('Enter',{delay:2000});
     return page;
 }
@@ -39,6 +41,7 @@ async function checkAttendance(page) {
 
 async function checkMorningLunchAfternoon(page) {
     let daysAttendance = {};
+    console.log('Checking Attendance...');
     await page.evaluate(() => { 
         let morningButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[0];
         morningButton.click();
@@ -60,12 +63,30 @@ async function checkMorningLunchAfternoon(page) {
     await page.waitForNavigation(2000);
     let afternoonAttendance = await checkAttendance(page);
     daysAttendance['afternoon'] = afternoonAttendance;
+
     console.log(daysAttendance);
+    return daysAttendance;
+}
+
+async function inputBPSS(data){
+    const browser = await puppeteer.launch({headless: true});
+    console.log('Visiting Google...');
+    const page = await browser.newPage();
+    await page.goto(credentials.gURL);
+    console.log('Logging into Google...');
+    await page.type('[id=identifierId]', credentials.gEmail);
+    await page.keyboard.press('Enter',{delay:2000});
+    // const passwordInput = await page.$$('input[name=Passwd]');
+    await page.type('input[name=Passwd]', credentials.gPassword);
+    await page.keyboard.press('Enter',{delay:2000});
+    console.log('Logged in to Google.')
+    return page;
 }
 
 async function runAttendance(){
     const page = await initBrowser();
-    await checkMorningLunchAfternoon(page);
+    const attendanceData = await checkMorningLunchAfternoon(page);
+    await inputBPSS(attendanceData);
 }
 
 runAttendance();
