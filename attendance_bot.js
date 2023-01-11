@@ -1,15 +1,14 @@
+const credentials = require("./credentials.js");
 const puppeteer = require('puppeteer');
-require('dotenv').config();
-
-const progressTrackerAttendanceUrl = process.env.URL;
+const progressTrackerAttendanceUrl = credentials.url;
 
 async function initBrowser() {
     const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
-    // await page.authenticate({username: process.env.EMAIL, password: process.env.PASSWORD});
+    // await page.authenticate({username: credentials.email, password: credentials.password});
     await page.goto(progressTrackerAttendanceUrl);
-    await page.type('[id=instructor_email]', process.env.EMAIL);
-    await page.type('[id=instructor_password]', process.env.PASSWORD);
+    await page.type('[id=instructor_email]', credentials.email);
+    await page.type('[id=instructor_password]', credentials.password);
     await page.keyboard.press('Enter',{delay:2000});
     return page;
 }
