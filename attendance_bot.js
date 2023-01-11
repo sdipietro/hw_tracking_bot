@@ -16,7 +16,6 @@ async function initBrowser() {
 }
 
 async function checkAttendance(page) {
-
     const studentList = await page.evaluate(() => { 
         let attendanceObj = {};
         let studentButtons = Array.from(document.getElementsByClassName('check-ins')[0].getElementsByTagName('form'));
@@ -41,29 +40,39 @@ async function checkAttendance(page) {
 
 async function checkMorningLunchAfternoon(page) {
     let daysAttendance = {};
+    const currentDay = await page.evaluate(() => { 
+        let dayDropdown = document.getElementById('day_id');
+        return dayDropdown.options[dayDropdown.selectedIndex].text;
+    });
+    daysAttendance[currentDay] = {};
+    
     console.log('Checking Attendance...');
     await page.evaluate(() => { 
         let morningButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[0];
         morningButton.click();
     });
     await page.waitForNavigation(2000);
+
     let morningAttendance = await checkAttendance(page);
-    daysAttendance['morning'] = morningAttendance;
+    daysAttendance[currentDay]['morning'] = morningAttendance;
     await page.evaluate(() => { 
         let lunchButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[1];
         lunchButton.click();
     });
     await page.waitForNavigation(2000);
+
     let lunchAttendance = await checkAttendance(page);
-    daysAttendance['lunch'] = lunchAttendance;
+    daysAttendance[currentDay]['lunch'] = lunchAttendance;
     await page.evaluate(() => { 
         let afternoonButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[2];
         afternoonButton.click();
     });
     await page.waitForNavigation(2000);
-    let afternoonAttendance = await checkAttendance(page);
-    daysAttendance['afternoon'] = afternoonAttendance;
 
+    let afternoonAttendance = await checkAttendance(page);
+    daysAttendance[currentDay]['afternoon'] = afternoonAttendance;
+
+    console.log('Checked attendance: ');
     console.log(daysAttendance);
     return daysAttendance;
 }
@@ -86,7 +95,7 @@ async function inputBPSS(data){
 async function runAttendance(){
     const page = await initBrowser();
     const attendanceData = await checkMorningLunchAfternoon(page);
-    await inputBPSS(attendanceData);
+    // await inputBPSS(attendanceData);
 }
 
 runAttendance();
