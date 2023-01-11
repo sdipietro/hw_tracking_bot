@@ -1,27 +1,72 @@
 const puppeteer = require('puppeteer');
+require('dotenv').config();
 
-const progressTrackerAttendanceUrl = "https://progress.appacademy.io/cycles/309/attendances";
+const progressTrackerAttendanceUrl = process.env.URL;
 
 async function initBrowser() {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
+    // await page.authenticate({username: process.env.EMAIL, password: process.env.PASSWORD});
     await page.goto(progressTrackerAttendanceUrl);
+    await page.type('[id=instructor_email]', process.env.EMAIL);
+    await page.type('[id=instructor_password]', process.env.PASSWORD);
+    await page.keyboard.press('Enter',{delay:2000});
     return page;
 }
 
-async function checkInAttendance(page) {
-    const studentList = page.$('.check-ins');
-    const studentArr = studentList.$$('input');
-    await page.$$eval(studentArr, );
+async function checkAttendance(page) {
 
-    
-    // const html = await page.evaluate(() => {
-    //     return document.getElementById("g-recaptcha-response").innerHTML;
-    // });
-    // console.log(html);
+    const studentList = await page.evaluate(() => { 
+        let attendanceObj = {};
+        let studentButtons = Array.from(document.getElementsByClassName('check-ins')[0].getElementsByTagName('form'));
+        studentButtons.forEach((ele) => {
+            let formButton = ele.getElementsByTagName('fieldset')[0];
+            let studentName = formButton.getElementsByTagName('label')[0].innerText.split(' - ')[0];
+            if (formButton.className === 'present') {
+                attendanceObj[studentName] = true;
+            } else {
+                attendanceObj[studentName] = false;
+            }
+        });
+        return attendanceObj;
+    });
+    return studentList;
+
+    // const studentArr = studentList.$$('input', students => {students.forEach(student => {
+    //     student.click();
+    // });});
+    // await page.$$eval(studentArr, );
+}
+
+async function checkMorningLunchAfternoon(page) {
+    let daysAttendance = {};
+    await page.evaluate(() => { 
+        let morningButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[0];
+        morningButton.click();
+    });
+    await page.waitForNavigation(2000);
+    let morningAttendance = await checkAttendance(page);
+    daysAttendance['morning'] = morningAttendance;
+    await page.evaluate(() => { 
+        let lunchButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[1];
+        lunchButton.click();
+    });
+    await page.waitForNavigation(2000);
+    let lunchAttendance = await checkAttendance(page);
+    daysAttendance['lunch'] = lunchAttendance;
+    await page.evaluate(() => { 
+        let afternoonButton = document.getElementsByClassName('top-bar')[0].getElementsByTagName('a')[2];
+        afternoonButton.click();
+    });
+    await page.waitForNavigation(2000);
+    let afternoonAttendance = await checkAttendance(page);
+    daysAttendance['afternoon'] = afternoonAttendance;
+    console.log(daysAttendance);
 }
 
 async function runAttendance(){
     const page = await initBrowser();
-    await checkInAttendance(page);
+    await checkMorningLunchAfternoon(page);
 }
+
+runAttendance();
