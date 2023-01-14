@@ -11,7 +11,7 @@ async function loginPT(page) {
     console.log('Logging into Progress Tracker...');
     await page.type('[id=instructor_email]', credentials.aAemail);
     await page.type('[id=instructor_password]', credentials.aApassword);
-    await page.keyboard.press('Enter',{delay:2000});
+    await page.keyboard.press('Enter',{delay:5000});
     return page;
 }
 
@@ -91,7 +91,7 @@ async function checkMorningLunchAfternoon(page) {
 async function inputBPSS(attendanceData) {
     console.log('Inputting attendance in google sheets...')
     const auth = new google.auth.GoogleAuth({
-        keyFile: "google_creds.json",
+        keyFile: "/Users/steve/Desktop/hw_tracking_bot/google_creds.json",
         scopes: "https://www.googleapis.com/auth/spreadsheets",
     });
 
