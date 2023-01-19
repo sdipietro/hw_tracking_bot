@@ -2,7 +2,7 @@ const credentials = require("./credentials.js");
 const puppeteer = require('puppeteer');
 const { google } = require("googleapis");
 
-const progressTrackerAttendanceUrl = credentials.aAurl;
+const progressTrackerAttendanceUrl = credentials.attendanceUrl;
 
 async function loginPT(page) {
     console.log('Visiting Progress Tracker...');
@@ -102,28 +102,36 @@ async function inputBPSS(attendanceData) {
     let sheetNumber;
 
     switch (week) {
-        case '1' || '2':
+        case '1':
+        case '2':
             sheetNumber = '1';
             break;
-        case '3' || '4':
+        case '3':
+        case '4':
             sheetNumber = '3';
             break;
-        case '5' || '6':
+        case '5':
+        case '6':
             sheetNumber = '5';
             break;
-        case '7' || '8':
+        case '7':
+        case '8':
             sheetNumber = '7';
             break;
-        case '9' || '10':
+        case '9':
+        case '10':
             sheetNumber = '9';
             break;
-        case '11' || '12':
+        case '11':
+        case '12':
             sheetNumber = '11';
             break;
-        case '13' || '14':
+        case '13':
+        case '14':
             sheetNumber = '13';
             break;
-        case '15' || '16':
+        case '15':
+        case '16':
             sheetNumber = '15';
             break;
         default:
